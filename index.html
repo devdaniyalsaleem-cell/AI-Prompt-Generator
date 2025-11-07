@@ -149,7 +149,7 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
 
       const copyBtn = document.createElement('button');
       copyBtn.className = 'copy-btn';
-      copyBtn.innerHTML = (i === 3) ? 'Copy Blog Image Prompt' : `<i class="ri-file-copy-2-line"></i> Copy Prompt ${i + 1}`;
+      copyBtn.innerHTML = (i === 3) ? `<i class="ri-file-copy-2-line"></i> Copy Blog Image Prompt` : `<i class="ri-file-copy-2-line"></i> Copy Prompt ${i + 1}`;
       copyBtn.addEventListener('click', () => {
         navigator.clipboard.writeText(p).then(() => {
           copyBtn.innerHTML = `<i class="ri-file-copy-2-fill"></i> Copied <i class="ri-check-double-line"></i>`;
@@ -198,7 +198,7 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
       .join("\n\n----\n\n");
     navigator.clipboard.writeText(allPrompts).then(() => {
       copyAllGlobal.textContent = '✅ All Prompts Copied!';
-      setTimeout(() => copyAllGlobal.textContent = '📋 Copy All Prompts', 1500);
+      setTimeout(() => copyAllGlobal.textContent = '<i class="ri-file-copy-2-fill"></i>  Copy All Prompts', 1500);
     });
   });
 })();
