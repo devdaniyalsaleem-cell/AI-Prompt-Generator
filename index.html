@@ -104,39 +104,25 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
     return { first, second, third };
   }
 
-  // make prompt blocks (no descriptions)
-  function makePromptBlocks(main, design, numbers) {
+  // make prompt blocks (only 3 Pinterest prompts)
+  function makePromptBlocks(main) {
     const mainSafe = main.trim();
-    const designSafe = design.trim();
-
     const p1 = template.pinterest1.replaceAll('{{MainKeyword}}', mainSafe);
     const p2 = template.pinterest2.replaceAll('{{MainKeyword}}', mainSafe);
     const p3 = template.pinterest3.replaceAll('{{MainKeyword}}', mainSafe);
-    const pb = template.blog
-      .replaceAll('{{MainKeyword}}', mainSafe)
-      .replaceAll('{{DesignKeyword}}', designSafe);
-
-    const pinterestTitle1 = `${numbers.first} ${designSafe}`;
-    const pinterestTitle2 = ` ${numbers.second} ${designSafe}`;
-    const pinterestTitle3 = `${numbers.third} ${designSafe}`;
-    const blogImageTitle = designSafe;
-
-    const block1 = `${p1}\n\nTitle: ${pinterestTitle1}`;
-    const block2 = `${p2}\n\nTitle: ${pinterestTitle2}`;
-    const block3 = `${p3}\n\nTitle: ${pinterestTitle3}`;
-    const block4 = `${pb}\n\nBlog Title: ${blogImageTitle}`;
-
-    return [block1, block2, block3, block4];
+    return [p1, p2, p3];
   }
 
   // create UI cards
-  function createCard(main, design, index, total, numbers) {
-    const prompts = makePromptBlocks(main, design, numbers);
+  function createCard(main, design, index, total) {
+    const prompts = makePromptBlocks(main);
     const card = document.createElement('div');
     card.className = 'card';
+
     const title = document.createElement('h3');
     title.textContent = `${index + 1}. ${design}`;
     card.appendChild(title);
+
     const meta = document.createElement('div');
     meta.className = 'meta';
     meta.textContent = `Primary: ${main} — Secondary ${index + 1} of ${total}`;
@@ -153,18 +139,12 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
 
       const copyBtn = document.createElement('button');
       copyBtn.className = 'copy-btn';
-      copyBtn.innerHTML =
-        i === 3
-          ? `<i class="ri-file-copy-2-line"></i> Copy Blog Prompt`
-          : `<i class="ri-file-copy-2-line"></i> Copy Prompt ${i + 1}`;
+      copyBtn.innerHTML = `<i class="ri-file-copy-2-line"></i> Copy Prompt ${i + 1}`;
       copyBtn.addEventListener('click', () => {
         navigator.clipboard.writeText(p).then(() => {
           copyBtn.innerHTML = `<i class="ri-file-copy-2-fill"></i> Copied ✅`;
           setTimeout(() => {
-            copyBtn.innerHTML =
-              i === 3
-                ? `<i class="ri-file-copy-2-line"></i> Copy Blog Prompt`
-                : `<i class="ri-file-copy-2-line"></i> Copy Prompt ${i + 1}`;
+            copyBtn.innerHTML = `<i class="ri-file-copy-2-line"></i> Copy Prompt ${i + 1}`;
           }, 1200);
         });
       });
@@ -192,10 +172,10 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
 
     cards.innerHTML = '';
     summary.style.display = 'block';
-    summary.innerHTML = `Total secondary keywords: <strong>${total}</strong>. Pinterest title numbers → 1st: <strong>${numbers.first}</strong>, 2nd: <strong>${numbers.second}</strong>, 3rd: <strong>${numbers.third}</strong>.`;
+    summary.innerHTML = `Total secondary keywords: <strong>${total}</strong>. Pinterest numbering → 1st: <strong>${numbers.first}</strong>, 2nd: <strong>${numbers.second}</strong>, 3rd: <strong>${numbers.third}</strong>.`;
 
     lines.forEach((design, i) => {
-      const card = createCard(main, design, i, total, numbers);
+      const card = createCard(main, design, i, total);
       cards.appendChild(card);
     });
 
@@ -209,7 +189,7 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
     copyAllGlobal.style.display = 'none';
   });
 
-  // copy all
+  // copy all (pure prompts only)
   copyAllGlobal.addEventListener('click', () => {
     const cardBlocks = Array.from(cards.querySelectorAll('.card'));
     let fullText = '';
