@@ -207,8 +207,8 @@ copyAllGlobal.addEventListener('click', () => {
   });
 
   navigator.clipboard.writeText(fullText).then(() => {
-    copyAllGlobal.textContent = '✅ All Prompts Copied with S.NO!';
-    setTimeout(() => copyAllGlobal.textContent = '📋 Copy All Prompts', 1500);
+    copyAllGlobal.innerHTML = '<i class="ri-file-copy-2-fill"></i> All Prompts Copied with S.NO!';
+    setTimeout(() => copyAllGlobal.innerHTML = `<i class="ri-file-copy-2-line"></i> Copy All Prompts`, 1500);
   });
 });
 
