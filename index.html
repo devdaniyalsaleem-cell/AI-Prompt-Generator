@@ -192,15 +192,25 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
     copyAllGlobal.style.display = 'none';
   });
 
-  copyAllGlobal.addEventListener('click', () => {
-    const allPrompts = Array.from(cards.querySelectorAll('.prompt'))
+copyAllGlobal.addEventListener('click', () => {
+  const cardBlocks = Array.from(cards.querySelectorAll('.card'));
+  let fullText = '';
+
+  cardBlocks.forEach((card, index) => {
+    const title = card.querySelector('h3').textContent.trim();
+    const prompts = Array.from(card.querySelectorAll('.prompt'))
       .map(p => p.textContent.trim())
-      .join("\n\n----\n\n");
-    navigator.clipboard.writeText(allPrompts).then(() => {
-      copyAllGlobal.innerHTML = `<i class="ri-file-copy-2-fill"></i> All Prompts Copied!`;
-      setTimeout(() => copyAllGlobal.innerHTML = `<i class="ri-file-copy-2-line"></i>  Copy All Prompts`, 1500);
-    });
+      .join("\n\n");
+
+    fullText += `S.NO: ${String(index + 1).padStart(2, '0')} — ${title}\n\n${prompts}\n\n------------------------\n\n`;
   });
+
+  navigator.clipboard.writeText(fullText).then(() => {
+    copyAllGlobal.textContent = '✅ All Prompts Copied with S.NO!';
+    setTimeout(() => copyAllGlobal.textContent = '📋 Copy All Prompts', 1500);
+  });
+});
+
 })();
 </script>
 </body>
