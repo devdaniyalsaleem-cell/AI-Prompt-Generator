@@ -197,8 +197,8 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
       .map(p => p.textContent.trim())
       .join("\n\n----\n\n");
     navigator.clipboard.writeText(allPrompts).then(() => {
-      copyAllGlobal.textContent = '✅ All Prompts Copied!';
-      setTimeout(() => copyAllGlobal.textContent = '<i class="ri-file-copy-2-fill"></i>  Copy All Prompts', 1500);
+      copyAllGlobal.innerHTML = `<i class="ri-file-copy-2-fill"></i> All Prompts Copied!`;
+      setTimeout(() => copyAllGlobal.innerHTML = '<i class="ri-file-copy-2-fill"></i>  Copy All Prompts', 1500);
     });
   });
 })();
