@@ -75,6 +75,7 @@ Aesthetic collage showing 3–4 different {{MainKeyword}} styles on diverse wome
 High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, salon-inspired environment, natural lighting, elegant and soft color palette. No Text overlay on picture title description and just single image prompt (optional): "50+ Beautiful {{MainKeyword}} to Inspire Your Next Look".`
   };
 
+
   const generateBtn = document.getElementById('generate');
   const cards = document.getElementById('cards');
   const primaryInput = document.getElementById('primary');
@@ -83,6 +84,7 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
   const clearBtn = document.getElementById('clear');
   const copyAllGlobal = document.getElementById('copyAllGlobal');
 
+  // number range logic (0+, 24+, 5+)
   function computeNumbers(total) {
     let range = 0;
     if (total < 10) range = 0;
@@ -102,6 +104,7 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
     return { first, second, third };
   }
 
+  // make prompt blocks (no descriptions)
   function makePromptBlocks(main, design, numbers) {
     const mainSafe = main.trim();
     const designSafe = design.trim();
@@ -109,27 +112,24 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
     const p1 = template.pinterest1.replaceAll('{{MainKeyword}}', mainSafe);
     const p2 = template.pinterest2.replaceAll('{{MainKeyword}}', mainSafe);
     const p3 = template.pinterest3.replaceAll('{{MainKeyword}}', mainSafe);
-    const pb = template.blog.replaceAll('{{MainKeyword}}', mainSafe).replaceAll('{{DesignKeyword}}', designSafe);
+    const pb = template.blog
+      .replaceAll('{{MainKeyword}}', mainSafe)
+      .replaceAll('{{DesignKeyword}}', designSafe);
 
-    const pinterestTitle1 = `Pinterest ${numbers.first} — ${designSafe}`;
-    const pinterestTitle2 = `Pinterest ${numbers.second} — ${designSafe}`;
-    const pinterestTitle3 = `Pinterest ${numbers.third} — ${designSafe}`;
-
-    const pinterestDesc1 = `Discover ${numbers.first} ideas of ${mainSafe} focusing on the ${designSafe} look — elegant, natural, and salon-ready for women over 50.`;
-    const pinterestDesc2 = `See ${numbers.second} modern and chic ${mainSafe} variations featuring the ${designSafe} style — confident, fresh, and timeless.`;
-    const pinterestDesc3 = `A curated collage showcasing ${numbers.third} best ${mainSafe} looks including ${designSafe} — cinematic, graceful, and softly lit.`;
-
+    const pinterestTitle1 = `${numbers.first} ${designSafe}`;
+    const pinterestTitle2 = ` ${numbers.second} ${designSafe}`;
+    const pinterestTitle3 = `${numbers.third} ${designSafe}`;
     const blogImageTitle = designSafe;
-    const blogImageDesc = `Elegant salon-inspired cover photo of a mature woman wearing the ${designSafe}. Natural lighting, soft tones, and shallow focus convey timeless confidence and beauty.`;
 
-    const block1 = `${p1}\n\nTitle: ${pinterestTitle1}\n\nDescription: ${pinterestDesc1}`;
-    const block2 = `${p2}\n\nTitle: ${pinterestTitle2}\n\nDescription: ${pinterestDesc2}`;
-    const block3 = `${p3}\n\nTitle: ${pinterestTitle3}\n\nDescription: ${pinterestDesc3}`;
-    const block4 = `${pb}\n\nBlog Title (exact): ${blogImageTitle}\n\nImage Description: ${blogImageDesc}`;
+    const block1 = `${p1}\n\nTitle: ${pinterestTitle1}`;
+    const block2 = `${p2}\n\nTitle: ${pinterestTitle2}`;
+    const block3 = `${p3}\n\nTitle: ${pinterestTitle3}`;
+    const block4 = `${pb}\n\nBlog Title: ${blogImageTitle}`;
 
     return [block1, block2, block3, block4];
   }
 
+  // create UI cards
   function createCard(main, design, index, total, numbers) {
     const prompts = makePromptBlocks(main, design, numbers);
     const card = document.createElement('div');
@@ -153,11 +153,19 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
 
       const copyBtn = document.createElement('button');
       copyBtn.className = 'copy-btn';
-      copyBtn.innerHTML = (i === 3) ? `<i class="ri-file-copy-2-line"></i> Copy Blog Prompt` : `<i class="ri-file-copy-2-line"></i> Copy Prompt ${i + 1}`;
+      copyBtn.innerHTML =
+        i === 3
+          ? `<i class="ri-file-copy-2-line"></i> Copy Blog Prompt`
+          : `<i class="ri-file-copy-2-line"></i> Copy Prompt ${i + 1}`;
       copyBtn.addEventListener('click', () => {
         navigator.clipboard.writeText(p).then(() => {
-          copyBtn.innerHTML = `<i class="ri-file-copy-2-fill"></i> Copied <i class="ri-check-double-line"></i>`;
-          setTimeout(() => copyBtn.innerHTML = (i === 3) ? `<i class="ri-file-copy-2-line"></i> Copy Blog Image Prompt` : `<i class="ri-file-copy-2-line"></i> Copy Prompt ${i + 1}`, 1200);
+          copyBtn.innerHTML = `<i class="ri-file-copy-2-fill"></i> Copied ✅`;
+          setTimeout(() => {
+            copyBtn.innerHTML =
+              i === 3
+                ? `<i class="ri-file-copy-2-line"></i> Copy Blog Prompt`
+                : `<i class="ri-file-copy-2-line"></i> Copy Prompt ${i + 1}`;
+          }, 1200);
         });
       });
       controls.appendChild(copyBtn);
@@ -168,13 +176,17 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
     return card;
   }
 
+  // generate prompts
   generateBtn.addEventListener('click', () => {
     const main = primaryInput.value.trim();
     const secondaryRaw = secondaryInput.value.trim();
     if (!main) return alert('Please enter the primary keyword');
     if (!secondaryRaw) return alert('Please enter at least one secondary keyword');
 
-    const lines = secondaryRaw.split(/\r?\n/).map(s => s.trim()).filter(s => s);
+    const lines = secondaryRaw
+      .split(/\r?\n/)
+      .map((s) => s.trim())
+      .filter((s) => s);
     const total = lines.length;
     const numbers = computeNumbers(total);
 
@@ -190,30 +202,33 @@ High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, 
     copyAllGlobal.style.display = 'inline-block';
   });
 
+  // clear all
   clearBtn.addEventListener('click', () => {
     cards.innerHTML = '';
     summary.style.display = 'none';
     copyAllGlobal.style.display = 'none';
   });
 
-copyAllGlobal.addEventListener('click', () => {
-  const cardBlocks = Array.from(cards.querySelectorAll('.card'));
-  let fullText = '';
+  // copy all
+  copyAllGlobal.addEventListener('click', () => {
+    const cardBlocks = Array.from(cards.querySelectorAll('.card'));
+    let fullText = '';
 
-  cardBlocks.forEach((card, index) => {
-    const title = card.querySelector('h3').textContent.trim();
-    const prompts = Array.from(card.querySelectorAll('.prompt'))
-      .map(p => p.textContent.trim())
-      .join("\n\n");
+    cardBlocks.forEach((card, index) => {
+      const title = card.querySelector('h3').textContent.trim();
+      const prompts = Array.from(card.querySelectorAll('.prompt'))
+        .map((p) => p.textContent.trim())
+        .join("\n\n");
+      fullText += `S.NO: ${String(index + 1).padStart(2, '0')} — ${title}\n\n${prompts}\n\n------------------------\n\n`;
+    });
 
-    fullText += `S.NO: ${String(index + 1).padStart(2, '0')} — ${title}\n\n${prompts}\n\n------------------------\n\n`;
+    navigator.clipboard.writeText(fullText).then(() => {
+      copyAllGlobal.innerHTML = '<i class="ri-file-copy-2-fill"></i> All Prompts Copied ✅';
+      setTimeout(() => {
+        copyAllGlobal.innerHTML = `<i class="ri-file-copy-2-line"></i> Copy All Prompts`;
+      }, 1500);
+    });
   });
-
-  navigator.clipboard.writeText(fullText).then(() => {
-    copyAllGlobal.innerHTML = '<i class="ri-file-copy-2-fill"></i> All Prompts Copied with S.NO!';
-    setTimeout(() => copyAllGlobal.innerHTML = `<i class="ri-file-copy-2-line"></i> Copy All Prompts`, 1500);
-  });
-});
 
 })();
 </script>
