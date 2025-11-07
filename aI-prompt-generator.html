@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AI Prompt Generator — Whisk Lab (Pinterest + Blog Image Prompts)</title>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css"rel="stylesheet"/>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+  .main-icon{background-color: #0077f4; padding: 10px; border-radius: 10px; color: white;}
+  *{font-family: "Poppins", sans-serif !important; font-weight: 400;} body {  background:#f7f7fb; color:#111; padding:20px; }
+  .wrap { max-width:1100px; margin:0 auto; }
+  h1 { margin:0 0 12px; font-size:31px; font-weight: 600; }
+  label { font-weight:600; display:block; margin-top: 28px; margin-bottom: 7px; }
+  textarea, input[type="text"] { width:100%; padding:15px 10px; border:1px solid #d7d7e0; border-radius:8px; font-size:14px; box-sizing:border-box; }
+  .row { display:flex; gap:12px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+  button { background:#0077f4 !important; color:white; border:none; }
+  button.secondary { background:#6b7280  !important; }
+  #copyAllGlobal{    background-color: #ff9500 !important;}
+  .cards { margin-top:18px; display:grid; gap:12px; }
+  .card { background:white; padding:12px; border-radius:10px; box-shadow:0 6px 18px rgba(12,12,22,0.06); }
+  .card h3 { margin:0 0 8px; font-size:15px; }
+  .prompt { background:#f3f4f6; padding:10px; border-radius:8px; white-space:pre-wrap; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; margin-bottom:8px; }
+  .controls { display:flex; gap:8px; margin-top: 13px; flex-wrap: wrap; margin-bottom: 15px; flex-wrap:wrap; }
+  .meta { font-size:13px; color:#555; margin-bottom:8px; }
+  details { margin-top:8px; }
+  .copy-btn { background: #06c500 !important; border:none; padding:11px 10px; border-radius:8px; cursor:pointer; color:white; font-weight:600; }
+  .copy-all-global,button { background:#2563eb; font-size:14px; padding:12px 16px; border-radius:8px; cursor:pointer; color:white; font-weight:600; }
+  .note { background:#fff7ed; border:1px solid #ffedd5; padding:10px; border-radius:8px; margin-top:12px; color:#92400e; }
+  .footer { margin-top:18px; font-size:13px; color:#444; text-align:center; }
+  @media (max-width:720px){ .row{flex-direction:column;align-items:stretch} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><i class="ri-robot-2-fill main-icon"></i> AI Prompt Generator</h1>
+
+  <label for="primary">Primary Keyword (Main Keyword)</label>
+  <input id="primary" type="text" placeholder='Type Primary Keyword' value="">
+
+  <label for="secondary">Secondary Keywords (one per line)</label>
+  <textarea id="secondary" rows="8" placeholder="Paste Secondary Keywords..."></textarea>
+
+  <div class="row">
+    <button id="generate"><i class="ri-shining-2-fill"></i> Generate Prompts</button>
+    <button id="clear" class="secondary"><i class="ri-close-line"></i> Clear Output</button>
+    <button id="copyAllGlobal" class="copy-all-global" style="display:none;"><i class="ri-file-copy-2-fill"></i> Copy All Prompts</button>
+  </div>
+
+  <div id="summary" class="note" style="display:none;"></div>
+  <div id="cards" class="cards"></div>
+</div>
+
+<script>
+(function(){
+  const template = {
+    pinterest1: `Pinterest Prompt 1 — Main Design
+
+Realistic, high-quality portrait of an elegant mature woman with {{MainKeyword}}, bright natural lighting, soft pastel background, professional salon look. Add stylish text overlay: "Explore 50+ {{MainKeyword}}".`,
+
+    pinterest2: `Pinterest Prompt 2 — Trendy Variation
+
+Side profile shot of a confident woman over 60 with {{MainKeyword}}, wearing light makeup, modern outfit, neutral background. Add overlay text: "Modern & Chic {{MainKeyword}} Ideas".`,
+
+    pinterest3: `Pinterest Prompt 3 — Collage / Showcase
+
+Aesthetic collage showing 3–4 different {{MainKeyword}} styles on diverse women over 60, clean background, consistent color tone. Add overlay: "Best {{MainKeyword}} for 2025".`,
+
+    blog: `WordPress Blog Image Prompt
+
+High-resolution blog cover photo showing a mature woman with {{DesignKeyword}}, salon-inspired environment, natural lighting, elegant and soft color palette. No Text overlay on picture title description and just single image prompt (optional): "50+ Beautiful {{MainKeyword}} to Inspire Your Next Look".`
+  };
+
+  const generateBtn = document.getElementById('generate');
+  const cards = document.getElementById('cards');
+  const primaryInput = document.getElementById('primary');
+  const secondaryInput = document.getElementById('secondary');
+  const summary = document.getElementById('summary');
+  const clearBtn = document.getElementById('clear');
+  const copyAllGlobal = document.getElementById('copyAllGlobal');
+
+  function computeNumbers(total) {
+    let range = 0;
+    if (total < 10) range = 0;
+    else if (total < 20) range = 10;
+    else if (total < 30) range = 20;
+    else if (total < 40) range = 30;
+    else if (total < 50) range = 40;
+    else if (total < 60) range = 50;
+    else if (total < 70) range = 60;
+    else if (total < 80) range = 70;
+    else if (total < 90) range = 80;
+    else range = 90;
+
+    const first = range + '+';
+    const second = '24+';
+    const third = (range + 5) + '+';
+    return { first, second, third };
+  }
+
+  function makePromptBlocks(main, design, numbers) {
+    const mainSafe = main.trim();
+    const designSafe = design.trim();
+
+    const p1 = template.pinterest1.replaceAll('{{MainKeyword}}', mainSafe);
+    const p2 = template.pinterest2.replaceAll('{{MainKeyword}}', mainSafe);
+    const p3 = template.pinterest3.replaceAll('{{MainKeyword}}', mainSafe);
+    const pb = template.blog.replaceAll('{{MainKeyword}}', mainSafe).replaceAll('{{DesignKeyword}}', designSafe);
+
+    const pinterestTitle1 = `Pinterest ${numbers.first} — ${designSafe}`;
+    const pinterestTitle2 = `Pinterest ${numbers.second} — ${designSafe}`;
+    const pinterestTitle3 = `Pinterest ${numbers.third} — ${designSafe}`;
+
+    const pinterestDesc1 = `Discover ${numbers.first} ideas of ${mainSafe} focusing on the ${designSafe} look — elegant, natural, and salon-ready for women over 50.`;
+    const pinterestDesc2 = `See ${numbers.second} modern and chic ${mainSafe} variations featuring the ${designSafe} style — confident, fresh, and timeless.`;
+    const pinterestDesc3 = `A curated collage showcasing ${numbers.third} best ${mainSafe} looks including ${designSafe} — cinematic, graceful, and softly lit.`;
+
+    const blogImageTitle = designSafe;
+    const blogImageDesc = `Elegant salon-inspired cover photo of a mature woman wearing the ${designSafe}. Natural lighting, soft tones, and shallow focus convey timeless confidence and beauty.`;
+
+    const block1 = `${p1}\n\nTitle: ${pinterestTitle1}\n\nDescription: ${pinterestDesc1}`;
+    const block2 = `${p2}\n\nTitle: ${pinterestTitle2}\n\nDescription: ${pinterestDesc2}`;
+    const block3 = `${p3}\n\nTitle: ${pinterestTitle3}\n\nDescription: ${pinterestDesc3}`;
+    const block4 = `${pb}\n\nBlog Title (exact): ${blogImageTitle}\n\nImage Description: ${blogImageDesc}`;
+
+    return [block1, block2, block3, block4];
+  }
+
+  function createCard(main, design, index, total, numbers) {
+    const prompts = makePromptBlocks(main, design, numbers);
+    const card = document.createElement('div');
+    card.className = 'card';
+    const title = document.createElement('h3');
+    title.textContent = `${index + 1}. ${design}`;
+    card.appendChild(title);
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = `Primary: ${main} — Secondary ${index + 1} of ${total}`;
+    card.appendChild(meta);
+
+    prompts.forEach((p, i) => {
+      const pre = document.createElement('div');
+      pre.className = 'prompt';
+      pre.textContent = p;
+      card.appendChild(pre);
+
+      const controls = document.createElement('div');
+      controls.className = 'controls';
+
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'copy-btn';
+      copyBtn.innerHTML = (i === 3) ? 'Copy Blog Image Prompt' : `<i class="ri-file-copy-2-line"></i> Copy Prompt ${i + 1}`;
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(p).then(() => {
+          copyBtn.innerHTML = `<i class="ri-file-copy-2-fill"></i> Copied <i class="ri-check-double-line"></i>`;
+          setTimeout(() => copyBtn.innerHTML = (i === 3) ? 'Copy Blog Image Prompt' : `<i class="ri-file-copy-2-line"></i> Copy Prompt ${i + 1}`, 1200);
+        });
+      });
+      controls.appendChild(copyBtn);
+
+      card.appendChild(controls);
+    });
+
+    return card;
+  }
+
+  generateBtn.addEventListener('click', () => {
+    const main = primaryInput.value.trim();
+    const secondaryRaw = secondaryInput.value.trim();
+    if (!main) return alert('Please enter the primary keyword');
+    if (!secondaryRaw) return alert('Please enter at least one secondary keyword');
+
+    const lines = secondaryRaw.split(/\r?\n/).map(s => s.trim()).filter(s => s);
+    const total = lines.length;
+    const numbers = computeNumbers(total);
+
+    cards.innerHTML = '';
+    summary.style.display = 'block';
+    summary.innerHTML = `Total secondary keywords: <strong>${total}</strong>. Pinterest title numbers → 1st: <strong>${numbers.first}</strong>, 2nd: <strong>${numbers.second}</strong>, 3rd: <strong>${numbers.third}</strong>.`;
+
+    lines.forEach((design, i) => {
+      const card = createCard(main, design, i, total, numbers);
+      cards.appendChild(card);
+    });
+
+    copyAllGlobal.style.display = 'inline-block';
+  });
+
+  clearBtn.addEventListener('click', () => {
+    cards.innerHTML = '';
+    summary.style.display = 'none';
+    copyAllGlobal.style.display = 'none';
+  });
+
+  copyAllGlobal.addEventListener('click', () => {
+    const allPrompts = Array.from(cards.querySelectorAll('.prompt'))
+      .map(p => p.textContent.trim())
+      .join("\n\n----\n\n");
+    navigator.clipboard.writeText(allPrompts).then(() => {
+      copyAllGlobal.textContent = '✅ All Prompts Copied!';
+      setTimeout(() => copyAllGlobal.textContent = '📋 Copy All Prompts', 1500);
+    });
+  });
+})();
+</script>
+</body>
+</html>
